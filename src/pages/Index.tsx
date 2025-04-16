@@ -11,7 +11,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon } from 'lucide-react';
+import { AIGenerationModal } from '@/components/AIGenerationModal';
+import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon, Sparkles } from 'lucide-react';
 
 interface Question {
   text: string;
@@ -38,13 +39,9 @@ export default function InterviewQuestionForm() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [savedForms, setSavedForms] = useState<SavedInterview[]>([]);
-  const [numberOfQuestions, setNumberOfQuestions] = useState('5');
-  const [generatedQuestionType, setGeneratedQuestionType] = useState('Mixed');
-  const [includeTechnical, setIncludeTechnical] = useState(true);
-  const [includeBehavioral, setIncludeBehavioral] = useState(true);
-  const [loadingAI, setLoadingAI] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [aiModalOpen, setAIModalOpen] = useState(false);
 
   const randomType = () => ['Video', 'Audio', 'Text'][Math.floor(Math.random() * 3)];
 
@@ -71,58 +68,8 @@ export default function InterviewQuestionForm() {
     setSheetOpen(false);
   };
 
-  const generateQuestionsWithAI = async () => {
-    setLoadingAI(true);
-    const prompt = `Generate ${numberOfQuestions} ${includeTechnical && includeBehavioral ? 'mixed' : includeTechnical ? 'technical' : 'behavioral'} interview questions for a ${jobTitle} role with ${experience} experience. Job description: ${description}`;
-
-    try {
-      const res = await fetch('/api/generate-questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (!data.questions || typeof data.questions !== 'string') {
-        throw new Error('Invalid format returned from API.');
-      }
-
-      const split = data.questions.split(/\n|\d+\.\s?/).filter((line: string) => line.trim());
-
-      const generated = split.map((q: string) => ({
-        text: q.trim(),
-        type: generatedQuestionType === 'Mixed' ? randomType() : generatedQuestionType,
-        required: true,
-        timeLimit,
-      }));
-
-      setQuestions([...questions, ...generated]);
-    } catch (error) {
-      console.error('Error generating questions:', error);
-
-      const dummyQuestions = [
-        "What are the core principles of React?",
-        "Describe a challenging bug you encountered and how you resolved it.",
-        "How would you optimize a slow-loading webpage?",
-        "Explain the difference between state and props in React.",
-        "How do you ensure accessibility in frontend applications?"
-      ];
-
-      const generated = dummyQuestions.map(q => ({
-        text: q,
-        type: generatedQuestionType === 'Mixed' ? randomType() : generatedQuestionType,
-        required: true,
-        timeLimit,
-      }));
-
-      setQuestions([...questions, ...generated]);
-    } finally {
-      setLoadingAI(false);
-    }
+  const handleGeneratedQuestions = (generatedQuestions: Question[]) => {
+    setQuestions([...questions, ...generatedQuestions]);
   };
 
   const saveForm = () => {
@@ -214,8 +161,8 @@ export default function InterviewQuestionForm() {
         />
       </div>
 
-      {/* Mobile: Add Question Button with Sheet */}
-      <div className="block md:hidden">
+      {/* Mobile: Action Buttons */}
+      <div className="block md:hidden space-y-3">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
@@ -232,6 +179,14 @@ export default function InterviewQuestionForm() {
             </div>
           </SheetContent>
         </Sheet>
+
+        <Button 
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          onClick={() => setAIModalOpen(true)}
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          Generate with AI
+        </Button>
       </div>
 
       {/* Desktop: Main Content */}
@@ -244,58 +199,14 @@ export default function InterviewQuestionForm() {
             {QuestionForm()}
           </div>
 
-          {/* AI Question Generator */}
-          <div className="space-y-4 bg-white p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold text-indigo-600">AI Question Generator</h3>
-            <Input 
-              type="number" 
-              value={numberOfQuestions} 
-              onChange={e => setNumberOfQuestions(e.target.value)} 
-              placeholder="Number of Questions" 
-            />
-            <Select value={generatedQuestionType} onValueChange={setGeneratedQuestionType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Question Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Mixed">Mixed</SelectItem>
-                <SelectItem value="Video">Video</SelectItem>
-                <SelectItem value="Audio">Audio</SelectItem>
-                <SelectItem value="Text">Text</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input 
-              type="number" 
-              value={timeLimit.toString()} 
-              onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-              placeholder="Time per Question" 
-            />
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  checked={includeTechnical} 
-                  onCheckedChange={checked => setIncludeTechnical(!!checked)}
-                  id="technical" 
-                />
-                <Label htmlFor="technical">Include Technical Questions</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  checked={includeBehavioral} 
-                  onCheckedChange={checked => setIncludeBehavioral(!!checked)} 
-                  id="behavioral"
-                />
-                <Label htmlFor="behavioral">Include Behavioral Questions</Label>
-              </div>
-            </div>
-            <Button 
-              onClick={generateQuestionsWithAI} 
-              disabled={loadingAI} 
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {loadingAI ? 'Generating...' : 'Generate Questions'}
-            </Button>
-          </div>
+          {/* AI Question Generator Button */}
+          <Button 
+            className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg"
+            onClick={() => setAIModalOpen(true)}
+          >
+            <Sparkles className="h-5 w-5" />
+            Generate with AI
+          </Button>
         </div>
 
         {/* Right Column (Full width on mobile, 3/5 on desktop) */}
@@ -498,61 +409,6 @@ export default function InterviewQuestionForm() {
         </div>
       </div>
 
-      {/* Mobile: AI Generation Section */}
-      <div className="block md:hidden bg-white p-3 rounded-lg shadow space-y-4">
-        <h3 className="text-lg font-semibold text-indigo-600">AI Question Generator</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Input 
-            type="number" 
-            value={numberOfQuestions} 
-            onChange={e => setNumberOfQuestions(e.target.value)} 
-            placeholder="Number of Questions" 
-          />
-          <Input 
-            type="number" 
-            value={timeLimit.toString()} 
-            onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-            placeholder="Time (seconds)" 
-          />
-        </div>
-        <Select value={generatedQuestionType} onValueChange={setGeneratedQuestionType}>
-          <SelectTrigger>
-            <SelectValue placeholder="Question Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Mixed">Mixed</SelectItem>
-            <SelectItem value="Video">Video</SelectItem>
-            <SelectItem value="Audio">Audio</SelectItem>
-            <SelectItem value="Text">Text</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex flex-row justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Checkbox 
-              checked={includeTechnical} 
-              onCheckedChange={checked => setIncludeTechnical(!!checked)} 
-              id="mobile-technical"
-            />
-            <Label htmlFor="mobile-technical">Technical</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox 
-              checked={includeBehavioral} 
-              onCheckedChange={checked => setIncludeBehavioral(!!checked)} 
-              id="mobile-behavioral"
-            />
-            <Label htmlFor="mobile-behavioral">Behavioral</Label>
-          </div>
-        </div>
-        <Button 
-          onClick={generateQuestionsWithAI} 
-          disabled={loadingAI} 
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-        >
-          {loadingAI ? 'Generating...' : 'Generate Questions'}
-        </Button>
-      </div>
-
       {/* Save & Load Forms */}
       <Button 
         className="w-full bg-green-600 hover:bg-green-700 text-white" 
@@ -579,6 +435,16 @@ export default function InterviewQuestionForm() {
           </div>
         </div>
       )}
+      
+      {/* AI Generation Modal */}
+      <AIGenerationModal
+        isOpen={aiModalOpen}
+        onOpenChange={setAIModalOpen}
+        onGenerate={handleGeneratedQuestions}
+        jobTitle={jobTitle}
+        experience={experience}
+        description={description}
+      />
     </div>
   );
 }
