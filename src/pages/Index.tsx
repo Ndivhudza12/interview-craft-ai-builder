@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -12,6 +11,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AIGenerationModal } from '@/components/AIGenerationModal';
+import { QuestionPagination } from '@/components/QuestionPagination';
+import { InterviewSummaryCard } from '@/components/InterviewSummaryCard';
 import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon, Sparkles } from 'lucide-react';
 
 interface Question {
@@ -99,49 +100,66 @@ export default function InterviewQuestionForm() {
     }
   };
 
-  const QuestionForm = () => (
-    <div className="space-y-4">
-      <Textarea 
-        value={questionText} 
-        onChange={e => setQuestionText(e.target.value)} 
-        placeholder="Enter your question" 
-        className="min-h-[100px]"
-      />
-      <Select value={questionType} onValueChange={setQuestionType}>
-        <SelectTrigger>
-          <SelectValue placeholder="Type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="Video">Video</SelectItem>
-          <SelectItem value="Audio">Audio</SelectItem>
-          <SelectItem value="Text">Text</SelectItem>
-        </SelectContent>
-      </Select>
-      <div className="flex items-center gap-2">
-        <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
-        <Label htmlFor="required">Required</Label>
+  const QuestionItem = (question: Question, index: number) => (
+    <div 
+      key={index} 
+      className="border p-3 rounded-xl bg-indigo-50 hover:shadow-md transition-all duration-300 animate-fade-in"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            {getQuestionTypeIcon(question.type)}
+            <span className="text-sm font-medium text-indigo-700">{question.type}</span>
+            {question.required && (
+              <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded">
+                Required
+              </span>
+            )}
+          </div>
+          <p className="font-medium mb-1">{question.text}</p>
+          <div className="flex items-center text-sm text-gray-600 mt-1">
+            <Clock className="inline w-3 h-3 mr-1" />
+            <span>{question.timeLimit} seconds</span>
+          </div>
+        </div>
+        <div className="flex gap-2 shrink-0 ml-2">
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            onClick={() => {
+              setQuestionText(question.text);
+              setQuestionType(question.type);
+              setRequired(question.required);
+              setTimeLimit(question.timeLimit);
+              setEditingIndex(index);
+              if (window.innerWidth < 768) {
+                setSheetOpen(true);
+              }
+            }}
+            className="hover:bg-indigo-200 hover:scale-110 transition-all"
+          >
+            <PencilLine className="h-4 w-4" />
+          </Button>
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
+            className="hover:bg-red-200 hover:scale-110 transition-all"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-      <Input 
-        type="number" 
-        value={timeLimit.toString()} 
-        onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-        placeholder="Time Limit (seconds)" 
-      />
-      <Button 
-        onClick={addQuestion} 
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-      >
-        {editingIndex !== null ? 'Update Question' : '+ Add Question'}
-      </Button>
     </div>
   );
 
   return (
     <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen">
-      <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700">Interview Question Builder</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 animate-fade-in">Interview Question Builder</h2>
 
       {/* Job Details */}
-      <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow">
+      <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow animate-fade-in">
         <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
         <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
         <Select value={experience} onValueChange={setExperience}>
@@ -162,10 +180,10 @@ export default function InterviewQuestionForm() {
       </div>
 
       {/* Mobile: Action Buttons */}
-      <div className="block md:hidden space-y-3">
+      <div className="block md:hidden space-y-3 animate-fade-in">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
-            <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add New Question
             </Button>
@@ -175,13 +193,46 @@ export default function InterviewQuestionForm() {
               <SheetTitle>Add New Question</SheetTitle>
             </SheetHeader>
             <div className="py-4">
-              {QuestionForm()}
+              <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+                <Textarea 
+                  value={questionText} 
+                  onChange={e => setQuestionText(e.target.value)} 
+                  placeholder="Enter your question" 
+                  className="min-h-[100px]"
+                />
+                <Select value={questionType} onValueChange={setQuestionType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Video">Video</SelectItem>
+                    <SelectItem value="Audio">Audio</SelectItem>
+                    <SelectItem value="Text">Text</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-2">
+                  <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
+                  <Label htmlFor="required">Required</Label>
+                </div>
+                <Input 
+                  type="number" 
+                  value={timeLimit.toString()} 
+                  onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
+                  placeholder="Time Limit (seconds)" 
+                />
+                <Button 
+                  onClick={addQuestion} 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
+                >
+                  {editingIndex !== null ? 'Update Question' : '+ Add Question'}
+                </Button>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
 
         <Button 
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform"
           onClick={() => setAIModalOpen(true)}
         >
           <Sparkles className="mr-2 h-4 w-4" />
@@ -194,14 +245,47 @@ export default function InterviewQuestionForm() {
         {/* Left Column (Desktop only) */}
         <div className="hidden md:block md:w-2/5 space-y-6">
           {/* Manual Question Form */}
-          <div className="space-y-4 bg-white p-4 rounded-lg shadow">
+          <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
             <h3 className="text-xl font-semibold text-indigo-600">Add Question Manually</h3>
-            {QuestionForm()}
+            <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+              <Textarea 
+                value={questionText} 
+                onChange={e => setQuestionText(e.target.value)} 
+                placeholder="Enter your question" 
+                className="min-h-[100px]"
+              />
+              <Select value={questionType} onValueChange={setQuestionType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Video">Video</SelectItem>
+                  <SelectItem value="Audio">Audio</SelectItem>
+                  <SelectItem value="Text">Text</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2">
+                <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
+                <Label htmlFor="required">Required</Label>
+              </div>
+              <Input 
+                type="number" 
+                value={timeLimit.toString()} 
+                onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
+                placeholder="Time Limit (seconds)" 
+              />
+              <Button 
+                onClick={addQuestion} 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
+              >
+                {editingIndex !== null ? 'Update Question' : '+ Add Question'}
+              </Button>
+            </div>
           </div>
 
           {/* AI Question Generator Button */}
           <Button 
-            className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg"
+            className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg hover:scale-[1.02] transition-transform animate-fade-in"
             onClick={() => setAIModalOpen(true)}
           >
             <Sparkles className="h-5 w-5" />
@@ -211,7 +295,7 @@ export default function InterviewQuestionForm() {
 
         {/* Right Column (Full width on mobile, 3/5 on desktop) */}
         <div className="w-full md:w-3/5 space-y-4">
-          {/* Questions List with Toggle View */}
+          {/* Questions List with Pagination */}
           <div className="bg-white p-3 md:p-4 rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg md:text-xl font-semibold text-indigo-600">
@@ -222,6 +306,7 @@ export default function InterviewQuestionForm() {
                   size="sm" 
                   variant={viewMode === 'card' ? "default" : "outline"} 
                   onClick={() => setViewMode('card')}
+                  className="hover:scale-110 transition-transform"
                 >
                   Cards
                 </Button>
@@ -229,67 +314,18 @@ export default function InterviewQuestionForm() {
                   size="sm" 
                   variant={viewMode === 'table' ? "default" : "outline"} 
                   onClick={() => setViewMode('table')}
+                  className="hover:scale-110 transition-transform"
                 >
                   Table
                 </Button>
               </div>
             </div>
 
-            {questions.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">
-                <FileText className="w-10 h-10 mx-auto mb-2" />
-                <p>No questions added yet</p>
-              </div>
-            ) : viewMode === 'card' ? (
-              <div className="space-y-3">
-                {questions.map((q, index) => (
-                  <div key={index} className="border p-3 rounded-xl bg-indigo-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getQuestionTypeIcon(q.type)}
-                          <span className="text-sm font-medium text-indigo-700">{q.type}</span>
-                          {q.required && (
-                            <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded">
-                              Required
-                            </span>
-                          )}
-                        </div>
-                        <p className="font-medium mb-1">{q.text}</p>
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <Clock className="inline w-3 h-3 mr-1" />
-                          <span>{q.timeLimit} seconds</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 shrink-0 ml-2">
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => {
-                            setQuestionText(q.text);
-                            setQuestionType(q.type);
-                            setRequired(q.required);
-                            setTimeLimit(q.timeLimit);
-                            setEditingIndex(index);
-                            if (window.innerWidth < 768) {
-                              setSheetOpen(true);
-                            }
-                          }}
-                        >
-                          <PencilLine className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {viewMode === 'card' ? (
+              <QuestionPagination 
+                questions={questions}
+                renderQuestion={QuestionItem}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <Table>
@@ -303,7 +339,7 @@ export default function InterviewQuestionForm() {
                   </TableHeader>
                   <TableBody>
                     {questions.map((q, index) => (
-                      <TableRow key={index}>
+                      <TableRow key={index} className="animate-fade-in" style={{ animationDelay: `${index * 30}ms` }}>
                         <TableCell>
                           <div className="flex items-center">
                             {getQuestionTypeIcon(q.type)}
@@ -332,6 +368,7 @@ export default function InterviewQuestionForm() {
                                   setSheetOpen(true);
                                 }
                               }}
+                              className="hover:bg-indigo-200 hover:scale-110 transition-all"
                             >
                               <PencilLine className="h-4 w-4" />
                             </Button>
@@ -339,6 +376,7 @@ export default function InterviewQuestionForm() {
                               size="icon" 
                               variant="ghost" 
                               onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
+                              className="hover:bg-red-200 hover:scale-110 transition-all"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -352,66 +390,20 @@ export default function InterviewQuestionForm() {
             )}
           </div>
 
-          {/* Results Summary Section */}
+          {/* Enhanced Interview Summary Card */}
           <div className="bg-white p-3 md:p-4 rounded-lg shadow">
-            <h3 className="text-lg md:text-xl font-semibold text-indigo-600 mb-3">Interview Summary</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Card>
-                <CardHeader className="py-4">
-                  <CardTitle className="text-sm font-medium">Job Position</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-xl font-bold">{jobTitle || 'Not specified'}</p>
-                  <p className="text-sm text-gray-500">{experience || 'Experience not specified'}</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="py-4">
-                  <CardTitle className="text-sm font-medium">Questions</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Total:</span> 
-                    <span className="font-bold">{questions.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Video:</span>
-                    <span>{questions.filter(q => q.type === 'Video').length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Audio:</span>
-                    <span>{questions.filter(q => q.type === 'Audio').length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Text:</span>
-                    <span>{questions.filter(q => q.type === 'Text').length}</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="py-4">
-                  <CardTitle className="text-sm font-medium">Time</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-xl font-bold">
-                    {questions.reduce((total, q) => total + q.timeLimit, 0)} seconds
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {Math.floor(questions.reduce((total, q) => total + q.timeLimit, 0) / 60)} minutes
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <InterviewSummaryCard 
+              jobTitle={jobTitle} 
+              experience={experience} 
+              questions={questions} 
+            />
           </div>
         </div>
       </div>
 
       {/* Save & Load Forms */}
       <Button 
-        className="w-full bg-green-600 hover:bg-green-700 text-white" 
+        className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
         onClick={saveForm}
       >
         <Save className="mr-2 h-4 w-4" /> Save Form
