@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend 
 } from 'recharts';
-import { ArrowLeft, Redo, PencilLine, BarChart as BarChartIcon, ListChecks, MessageSquare, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Redo, PencilLine, BarChart as BarChartIcon, ListChecks, MessageSquare, BarChart2, Clock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Question {
@@ -41,7 +40,6 @@ interface InterviewResultsAnalysisProps {
   onRetakeInterview: () => void;
 }
 
-// AI-generated feedback examples
 const generateAnswerFeedback = (answer: Answer) => {
   const feedbacks = [
     "Your response was well-structured and addressed the key points.",
@@ -54,7 +52,6 @@ const generateAnswerFeedback = (answer: Answer) => {
     "The answer could benefit from a stronger conclusion.",
   ];
   
-  // Simple pseudo-random selection based on question text length
   const index = (answer.questionText.length + answer.answerText.length) % feedbacks.length;
   return feedbacks[index];
 };
@@ -71,7 +68,6 @@ const generateImprovementTips = (answer: Answer) => {
     "Show enthusiasm for the role and company mission.",
   ];
   
-  // Simple pseudo-random selection
   const index = answer.questionId % tips.length;
   return tips[index];
 };
@@ -82,16 +78,13 @@ export function InterviewResultsAnalysis({
   const [activeTab, setActiveTab] = useState("summary");
   const isMobile = useIsMobile();
   
-  // Calculate basic stats
   const totalQuestions = interview.questions.length;
   const answeredQuestions = answers.filter(a => a.answerText !== "No answer provided").length;
   const averageResponseTime = answers.reduce((sum, a) => sum + a.timeSpent, 0) / answers.length;
   const timeEfficiencyScore = Math.min(100, Math.round((1 - (averageResponseTime / 60)) * 100));
   const completionScore = Math.round((answeredQuestions / totalQuestions) * 100);
   
-  // Calculate answer quality score (simulated)
   const answerQualityScores = answers.map((answer, index) => {
-    // Generate a semi-random score between 60-95 based on answer length and question index
     const baseScore = 60;
     const lengthBonus = Math.min(20, Math.floor(answer.answerText.length / 20));
     const randomFactor = (answer.questionId * 7) % 15;
@@ -102,10 +95,8 @@ export function InterviewResultsAnalysis({
     answerQualityScores.reduce((sum, score) => sum + score, 0) / answerQualityScores.length
   );
   
-  // Generate overall score
   const overallScore = Math.round((completionScore + timeEfficiencyScore + averageQualityScore) / 3);
   
-  // Prepare chart data
   const scoreChartData = [
     { name: 'Completion', value: completionScore, color: '#9333EA' },
     { name: 'Time Efficiency', value: timeEfficiencyScore, color: '#3B82F6' },
