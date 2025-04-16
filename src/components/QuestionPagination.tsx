@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
@@ -11,6 +10,7 @@ import {
   PaginationEllipsis
 } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Question {
   text: string;
@@ -47,19 +47,21 @@ export function QuestionPagination({ questions, renderQuestion }: QuestionPagina
   // Generate an array of page numbers to display
   const getPageNumbers = () => {
     const pages = [];
+    
     // Always show first page
-    if (currentPage > 3) {
+    if (currentPage > 2) {
       pages.push(1);
     }
     
     // Show ellipsis if needed
-    if (currentPage > 4) {
+    if (currentPage > 3) {
       pages.push('ellipsis');
     }
     
-    // Calculate range around current page
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
+    // Calculate range around current page - keep it small for mobile
+    const pageRange = isMobile ? 1 : 2;
+    const start = Math.max(currentPage > 2 ? currentPage - pageRange : 1, 1);
+    const end = Math.min(totalPages, currentPage + pageRange);
     
     // Add pages around current page
     for (let i = start; i <= end; i++) {
@@ -67,12 +69,12 @@ export function QuestionPagination({ questions, renderQuestion }: QuestionPagina
     }
     
     // Show ellipsis if needed
-    if (currentPage < totalPages - 3) {
+    if (currentPage < totalPages - 2) {
       pages.push('ellipsis');
     }
     
     // Always show last page if we have more than 1 page
-    if (totalPages > 1 && currentPage < totalPages - 1) {
+    if (totalPages > 1 && currentPage < totalPages) {
       pages.push(totalPages);
     }
     
@@ -110,7 +112,7 @@ export function QuestionPagination({ questions, renderQuestion }: QuestionPagina
               value={itemsPerPage.toString()}
               onValueChange={(value) => setItemsPerPage(parseInt(value))}
             >
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[100px] sm:w-[130px]">
                 <SelectValue placeholder="Per page" />
               </SelectTrigger>
               <SelectContent>
@@ -128,11 +130,14 @@ export function QuestionPagination({ questions, renderQuestion }: QuestionPagina
                     <PaginationPrevious 
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:scale-105 transition-transform"}
-                    />
+                      aria-disabled={currentPage === 1}
+                    >
+                      {isMobile ? <ChevronLeft className="h-4 w-4" /> : "Previous"}
+                    </PaginationPrevious>
                   </PaginationItem>
                 )}
                 
-                {totalPages > 1 && getPageNumbers().map((page, i) => (
+                {!isMobile && totalPages > 1 && getPageNumbers().map((page, i) => (
                   page === 'ellipsis' ? (
                     <PaginationItem key={`ellipsis-${i}`}>
                       <PaginationEllipsis />
@@ -150,12 +155,23 @@ export function QuestionPagination({ questions, renderQuestion }: QuestionPagina
                   )
                 ))}
                 
+                {isMobile && (
+                  <PaginationItem>
+                    <PaginationLink isActive>
+                      {currentPage} / {totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
                 {totalPages > 1 && (
                   <PaginationItem>
                     <PaginationNext 
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer hover:scale-105 transition-transform"}
-                    />
+                      aria-disabled={currentPage === totalPages}
+                    >
+                      {isMobile ? <ChevronRight className="h-4 w-4" /> : "Next"}
+                    </PaginationNext>
                   </PaginationItem>
                 )}
               </PaginationContent>
