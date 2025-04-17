@@ -495,51 +495,103 @@ export default function InterviewQuestionForm() {
       <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 animate-fade-in">Interview Question Builder</h2>
 
       {showForm ? (
-        <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow animate-fade-in">
-          <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
-          <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
-          <Select value={experience} onValueChange={setExperience}>
-            <SelectTrigger>
-              <SelectValue placeholder="Years of Experience" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="<1 year">Less than 1 year</SelectItem>
-              <SelectItem value="1-3 years">1-3 years</SelectItem>
-              <SelectItem value=">3 years">More than 3 years</SelectItem>
-            </SelectContent>
-          </Select>
-          <Textarea 
-            value={description} 
-            onChange={e => setDescription(e.target.value)} 
-            placeholder="Job Description..." 
-          />
-          
-          <div className="flex justify-end">
+        <>
+          <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow animate-fade-in">
+            <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
+            <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
+            <Select value={experience} onValueChange={setExperience}>
+              <SelectTrigger>
+                <SelectValue placeholder="Years of Experience" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="<1 year">Less than 1 year</SelectItem>
+                <SelectItem value="1-3 years">1-3 years</SelectItem>
+                <SelectItem value=">3 years">More than 3 years</SelectItem>
+              </SelectContent>
+            </Select>
+            <Textarea 
+              value={description} 
+              onChange={e => setDescription(e.target.value)} 
+              placeholder="Job Description..." 
+            />
+            
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                onClick={handleBackToHome} 
+                className="mr-2"
+                isLoading={isLoading && loadingAction === 'back'}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            </div>
+          </div>
+
+          <div className="block md:hidden space-y-3 animate-fade-in">
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger asChild>
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add New Question
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[80vh]">
+                <SheetHeader>
+                  <SheetTitle>Add New Question</SheetTitle>
+                </SheetHeader>
+                <div className="py-4">
+                  <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+                    <Textarea 
+                      value={questionText} 
+                      onChange={e => setQuestionText(e.target.value)} 
+                      placeholder="Enter your question" 
+                      className="min-h-[100px]"
+                    />
+                    <Select value={questionType} onValueChange={setQuestionType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Video">Video</SelectItem>
+                        <SelectItem value="Audio">Audio</SelectItem>
+                        <SelectItem value="Text">Text</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center gap-2">
+                      <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
+                      <Label htmlFor="required">Required</Label>
+                    </div>
+                    <Input 
+                      type="number" 
+                      value={timeLimit.toString()} 
+                      onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
+                      placeholder="Time Limit (seconds)" 
+                    />
+                    <Button 
+                      onClick={addQuestion} 
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
+                    >
+                      {editingIndex !== null ? 'Update Question' : '+ Add Question'}
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
             <Button 
-              variant="outline" 
-              onClick={handleBackToHome} 
-              className="mr-2"
-              isLoading={isLoading && loadingAction === 'back'}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform"
+              onClick={() => setAIModalOpen(true)}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate with AI
             </Button>
           </div>
-        </div>
 
-        <div className="block md:hidden space-y-3 animate-fade-in">
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger asChild>
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add New Question
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh]">
-              <SheetHeader>
-                <SheetTitle>Add New Question</SheetTitle>
-              </SheetHeader>
-              <div className="py-4">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="hidden md:block md:w-2/5 space-y-6">
+              <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+                <h3 className="text-xl font-semibold text-indigo-600">Add Question Manually</h3>
                 <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
                   <Textarea 
                     value={questionText} 
@@ -575,180 +627,130 @@ export default function InterviewQuestionForm() {
                   </Button>
                 </div>
               </div>
-            </SheetContent>
-          </Sheet>
+
+              <Button 
+                className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg hover:scale-[1.02] transition-transform animate-fade-in"
+                onClick={() => setAIModalOpen(true)}
+              >
+                <Sparkles className="h-5 w-5" />
+                Generate with AI
+              </Button>
+            </div>
+
+            <div className="w-full md:w-3/5 space-y-4">
+              <div className="bg-white p-3 md:p-4 rounded-lg shadow">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg md:text-xl font-semibold text-indigo-600">
+                    Questions List ({questions.length})
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant={viewMode === 'card' ? "default" : "outline"} 
+                      onClick={() => setViewMode('card')}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      Cards
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={viewMode === 'table' ? "default" : "outline"} 
+                      onClick={() => setViewMode('table')}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      Table
+                    </Button>
+                  </div>
+                </div>
+
+                {viewMode === 'card' ? (
+                  <QuestionPagination 
+                    questions={questions}
+                    renderQuestion={QuestionItem}
+                  />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">Type</TableHead>
+                          <TableHead>Question</TableHead>
+                          <TableHead className="w-[100px]">Time</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {questions.map((q, index) => (
+                          <TableRow key={index} className="animate-fade-in" style={{ animationDelay: `${index * 30}ms` }}>
+                            <TableCell>
+                              <div className="flex items-center">
+                                {getQuestionTypeIcon(q.type)}
+                                <span className="ml-1 hidden md:inline">{q.type}</span>
+                                {q.required && (
+                                  <span className="ml-1 bg-red-100 text-red-700 text-xs px-1 rounded">
+                                    *
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{q.text}</TableCell>
+                            <TableCell>{q.timeLimit}s</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  onClick={() => {
+                                    setQuestionText(q.text);
+                                    setQuestionType(q.type);
+                                    setRequired(q.required);
+                                    setTimeLimit(q.timeLimit);
+                                    setEditingIndex(index);
+                                    if (window.innerWidth < 768) {
+                                      setSheetOpen(true);
+                                    }
+                                  }}
+                                  className="hover:bg-indigo-200 hover:scale-110 transition-all"
+                                >
+                                  <PencilLine className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
+                                  className="hover:bg-red-200 hover:scale-110 transition-all"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white p-3 md:p-4 rounded-lg shadow">
+                <InterviewSummaryCard 
+                  jobTitle={jobTitle} 
+                  experience={experience} 
+                  questions={questions} 
+                />
+              </div>
+            </div>
+          </div>
 
           <Button 
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform"
-            onClick={() => setAIModalOpen(true)}
+            className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
+            onClick={saveForm}
+            disabled={questions.length === 0 || !jobTitle || isLoading}
+            isLoading={isLoading && loadingAction === 'save'}
           >
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate with AI
+            <Save className="mr-2 h-4 w-4" /> Save Interview
           </Button>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="hidden md:block md:w-2/5 space-y-6">
-            <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
-              <h3 className="text-xl font-semibold text-indigo-600">Add Question Manually</h3>
-              <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
-                <Textarea 
-                  value={questionText} 
-                  onChange={e => setQuestionText(e.target.value)} 
-                  placeholder="Enter your question" 
-                  className="min-h-[100px]"
-                />
-                <Select value={questionType} onValueChange={setQuestionType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Video">Video</SelectItem>
-                    <SelectItem value="Audio">Audio</SelectItem>
-                    <SelectItem value="Text">Text</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
-                  <Label htmlFor="required">Required</Label>
-                </div>
-                <Input 
-                  type="number" 
-                  value={timeLimit.toString()} 
-                  onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-                  placeholder="Time Limit (seconds)" 
-                />
-                <Button 
-                  onClick={addQuestion} 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
-                >
-                  {editingIndex !== null ? 'Update Question' : '+ Add Question'}
-                </Button>
-              </div>
-            </div>
-
-            <Button 
-              className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg hover:scale-[1.02] transition-transform animate-fade-in"
-              onClick={() => setAIModalOpen(true)}
-            >
-              <Sparkles className="h-5 w-5" />
-              Generate with AI
-            </Button>
-          </div>
-
-          <div className="w-full md:w-3/5 space-y-4">
-            <div className="bg-white p-3 md:p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg md:text-xl font-semibold text-indigo-600">
-                  Questions List ({questions.length})
-                </h3>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant={viewMode === 'card' ? "default" : "outline"} 
-                    onClick={() => setViewMode('card')}
-                    className="hover:scale-110 transition-transform"
-                  >
-                    Cards
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant={viewMode === 'table' ? "default" : "outline"} 
-                    onClick={() => setViewMode('table')}
-                    className="hover:scale-110 transition-transform"
-                  >
-                    Table
-                  </Button>
-                </div>
-              </div>
-
-              {viewMode === 'card' ? (
-                <QuestionPagination 
-                  questions={questions}
-                  renderQuestion={QuestionItem}
-                />
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[50px]">Type</TableHead>
-                        <TableHead>Question</TableHead>
-                        <TableHead className="w-[100px]">Time</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {questions.map((q, index) => (
-                        <TableRow key={index} className="animate-fade-in" style={{ animationDelay: `${index * 30}ms` }}>
-                          <TableCell>
-                            <div className="flex items-center">
-                              {getQuestionTypeIcon(q.type)}
-                              <span className="ml-1 hidden md:inline">{q.type}</span>
-                              {q.required && (
-                                <span className="ml-1 bg-red-100 text-red-700 text-xs px-1 rounded">
-                                  *
-                                </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium">{q.text}</TableCell>
-                          <TableCell>{q.timeLimit}s</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                onClick={() => {
-                                  setQuestionText(q.text);
-                                  setQuestionType(q.type);
-                                  setRequired(q.required);
-                                  setTimeLimit(q.timeLimit);
-                                  setEditingIndex(index);
-                                  if (window.innerWidth < 768) {
-                                    setSheetOpen(true);
-                                  }
-                                }}
-                                className="hover:bg-indigo-200 hover:scale-110 transition-all"
-                              >
-                                <PencilLine className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
-                                className="hover:bg-red-200 hover:scale-110 transition-all"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-3 md:p-4 rounded-lg shadow">
-              <InterviewSummaryCard 
-                jobTitle={jobTitle} 
-                experience={experience} 
-                questions={questions} 
-              />
-            </div>
-          </div>
-        </div>
-
-        <Button 
-          className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
-          onClick={saveForm}
-          disabled={questions.length === 0 || !jobTitle || isLoading}
-          isLoading={isLoading && loadingAction === 'save'}
-        >
-          <Save className="mr-2 h-4 w-4" /> Save Interview
-        </Button>
+        </>
       ) : (
         <div className="space-y-6 animate-fade-in">
           <div className="flex justify-between items-center">
