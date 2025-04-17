@@ -2,7 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, XAxis } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Video, Mic, Text as TextIcon, Clock, Briefcase, Calendar } from "lucide-react";
+import { Video, Mic, Text as TextIcon, Clock, Briefcase, Calendar, FileCheck, FileClock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Question {
   text: string;
@@ -15,9 +16,17 @@ interface InterviewSummaryCardProps {
   jobTitle: string;
   experience: string;
   questions: Question[];
+  status?: 'draft' | 'ongoing' | 'completed' | null;
+  attemptsCount?: number;
 }
 
-export function InterviewSummaryCard({ jobTitle, experience, questions }: InterviewSummaryCardProps) {
+export function InterviewSummaryCard({ 
+  jobTitle, 
+  experience, 
+  questions, 
+  status = null, 
+  attemptsCount = 0 
+}: InterviewSummaryCardProps) {
   const isMobile = useIsMobile();
   
   // Question type statistics
@@ -46,13 +55,34 @@ export function InterviewSummaryCard({ jobTitle, experience, questions }: Interv
     { name: 'Text', value: textQuestions, color: '#D6BCFA' },
   ].filter(item => item.value > 0);
 
-  // Calculate required vs optional questions
-  const requiredQuestions = questions.filter(q => q.required).length;
-  const optionalQuestions = questions.length - requiredQuestions;
+  // Status badge
+  const getStatusBadge = () => {
+    if (!status) return null;
+    
+    switch(status) {
+      case 'draft': 
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-300 flex items-center gap-1">
+          <FileClock className="w-3 h-3" /> Draft
+        </Badge>;
+      case 'ongoing': 
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300 flex items-center gap-1">
+          <Clock className="w-3 h-3" /> In Progress
+        </Badge>;
+      case 'completed': 
+        return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-200 border-green-300 flex items-center gap-1">
+          <FileCheck className="w-3 h-3" /> Completed
+        </Badge>;
+      default: 
+        return null;
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Interview Summary</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Interview Summary</h3>
+        {getStatusBadge()}
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-gradient-to-br from-white to-indigo-50">
@@ -68,6 +98,11 @@ export function InterviewSummaryCard({ jobTitle, experience, questions }: Interv
               <Calendar className="h-3 w-3" />
               {experience || 'Experience not specified'}
             </p>
+            {attemptsCount > 0 && (
+              <p className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-100">
+                <span className="font-medium">{attemptsCount}</span> {attemptsCount === 1 ? 'attempt' : 'attempts'} completed
+              </p>
+            )}
           </CardContent>
         </Card>
         
