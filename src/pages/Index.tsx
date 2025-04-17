@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -223,7 +224,7 @@ export default function InterviewQuestionForm() {
         if (form.id === currentInterview.id) {
           return {
             ...form,
-            status: 'draft',
+            status: 'draft' as const,
             questions: form.questions
           };
         }
@@ -484,7 +485,6 @@ export default function InterviewQuestionForm() {
         <InterviewSession 
           interview={currentInterview} 
           onComplete={handleInterviewComplete}
-          onSaveDraft={saveDraft}
         />
       </div>
     );
