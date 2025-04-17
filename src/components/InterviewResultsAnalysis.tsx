@@ -6,8 +6,14 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend 
 } from 'recharts';
-import { ArrowLeft, Redo, PencilLine, BarChart as BarChartIcon, ListChecks, MessageSquare, BarChart2, Clock } from 'lucide-react';
+import { ArrowLeft, Redo, PencilLine, BarChart as BarChartIcon, ListChecks, MessageSquare, BarChart2, Clock, Video, Mic, Text as TextIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { InterviewAnswerPlayer } from './InterviewAnswerPlayer';
+import { ReviewComments } from './ReviewComments';
+import { InterviewShareOptions } from './InterviewShareOptions';
+import { ViewToggle } from './ViewToggle';
+import { AnswersTableView } from './AnswersTableView';
+import { AnswersCardView } from './AnswersCardView';
 
 interface Question {
   text: string;
@@ -30,6 +36,14 @@ interface SavedInterview {
   experience: string;
   description: string;
   questions: Question[];
+}
+
+interface Review {
+  id: string;
+  reviewerName: string;
+  comment: string;
+  isAnonymous: boolean;
+  timestamp: string;
 }
 
 interface InterviewResultsAnalysisProps {
@@ -76,6 +90,25 @@ export function InterviewResultsAnalysis({
   interview, answers, onBackToList, onEditInterview, onRetakeInterview 
 }: InterviewResultsAnalysisProps) {
   const [activeTab, setActiveTab] = useState("summary");
+  const [answerViewMode, setAnswerViewMode] = useState<'card' | 'table'>('card');
+  const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([
+    {
+      id: '1',
+      reviewerName: 'Sarah Johnson',
+      comment: 'Great answers to technical questions! Try to be more specific about your experience with React in future interviews.',
+      isAnonymous: false,
+      timestamp: '2 days ago'
+    },
+    {
+      id: '2',
+      reviewerName: 'Anonymous',
+      comment: 'You could improve your explanation of state management concepts. Consider mentioning specific examples from your projects.',
+      isAnonymous: true,
+      timestamp: '1 day ago'
+    }
+  ]);
+  
   const isMobile = useIsMobile();
   
   const totalQuestions = interview.questions.length;
@@ -115,6 +148,29 @@ export function InterviewResultsAnalysis({
     timeSpent: answer.timeSpent,
     limit: interview.questions[answer.questionId].timeLimit
   }));
+  
+  const handleAddReview = (review: Omit<Review, 'id' | 'timestamp'>) => {
+    const newReview = {
+      ...review,
+      id: Date.now().toString(),
+      timestamp: 'Just now'
+    };
+    
+    setReviews([newReview, ...reviews]);
+  };
+  
+  const getQuestionTypeIcon = (type: string) => {
+    switch(type) {
+      case 'Video': return <Video className="h-4 w-4" />;
+      case 'Audio': return <Mic className="h-4 w-4" />;
+      case 'Text': return <TextIcon className="h-4 w-4" />;
+      default: return <TextIcon className="h-4 w-4" />;
+    }
+  };
+  
+  const selectedAnswer = selectedAnswerId !== null 
+    ? answers.find(a => a.questionId === selectedAnswerId) 
+    : null;
   
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
@@ -157,28 +213,28 @@ export function InterviewResultsAnalysis({
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100">
+        <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 animate-fade-in">
           <CardContent className="p-4 text-center">
             <div className="text-4xl font-bold text-indigo-800 mb-2">{overallScore}%</div>
             <p className="text-indigo-700">Overall Score</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100">
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100 animate-fade-in" style={{ animationDelay: "100ms" }}>
           <CardContent className="p-4 text-center">
             <div className="text-4xl font-bold text-purple-800 mb-2">{completionScore}%</div>
             <p className="text-purple-700">Completion Rate</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 animate-fade-in" style={{ animationDelay: "200ms" }}>
           <CardContent className="p-4 text-center">
             <div className="text-4xl font-bold text-blue-800 mb-2">{timeEfficiencyScore}%</div>
             <p className="text-blue-700">Time Efficiency</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-green-50 to-teal-50 border-green-100">
+        <Card className="bg-gradient-to-br from-green-50 to-teal-50 border-green-100 animate-fade-in" style={{ animationDelay: "300ms" }}>
           <CardContent className="p-4 text-center">
             <div className="text-4xl font-bold text-green-800 mb-2">{averageQualityScore}%</div>
             <p className="text-green-700">Answer Quality</p>
@@ -186,8 +242,8 @@ export function InterviewResultsAnalysis({
         </Card>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
+        <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="summary" className="flex items-center gap-2">
             <BarChart2 className="h-4 w-4" />
             <span className="hidden md:inline">Summary</span>
@@ -199,6 +255,10 @@ export function InterviewResultsAnalysis({
           <TabsTrigger value="feedback" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden md:inline">Feedback</span>
+          </TabsTrigger>
+          <TabsTrigger value="share" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span className="hidden md:inline">Share</span>
           </TabsTrigger>
         </TabsList>
         
@@ -284,50 +344,100 @@ export function InterviewResultsAnalysis({
         
         <TabsContent value="questions">
           <div className="space-y-6">
-            {answers.map((answer, index) => (
-              <Card key={index} className={`border-l-4 ${answer.answerText === "No answer provided" ? 'border-l-red-400' : 'border-l-green-400'}`}>
-                <CardHeader className="bg-gray-50">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-base font-medium">
-                      Question {index + 1}: {answer.questionText}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                        {answer.type}
-                      </span>
-                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {answer.timeSpent}s
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">Your Answer:</h4>
-                      <p className="text-gray-800 bg-gray-50 p-3 rounded border border-gray-100">
-                        {answer.answerText}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="text-sm font-medium text-indigo-600 mb-1">Answer Quality:</h4>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full bg-indigo-600" 
-                          style={{ width: `${answerQualityScores[index]}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Poor</span>
-                        <span>Excellent</span>
+            {selectedAnswer ? (
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex justify-between items-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedAnswerId(null)}
+                    className="border-indigo-200 hover:bg-indigo-50"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to All Answers
+                  </Button>
+                </div>
+                
+                <Card className={`border-l-4 ${selectedAnswer.answerText === "No answer provided" ? 'border-l-red-400' : 'border-l-green-400'}`}>
+                  <CardHeader className="bg-gray-50">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-base font-medium">
+                        Question: {selectedAnswer.questionText}
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1">
+                          {selectedAnswer.type}
+                        </span>
+                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {selectedAnswer.timeSpent}s
+                        </span>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 mb-1">Your Answer:</h4>
+                        <p className="text-gray-800 bg-gray-50 p-3 border border-gray-100">
+                          {selectedAnswer.answerText}
+                        </p>
+                      </div>
+                      
+                      <InterviewAnswerPlayer
+                        audioUrl="/mock-audio.mp3"
+                        videoUrl="/mock-video.mp4"
+                        answerType={selectedAnswer.type}
+                        questionText={selectedAnswer.questionText}
+                      />
+                      
+                      <div>
+                        <h4 className="text-sm font-medium text-indigo-600 mb-1">Answer Quality:</h4>
+                        <div className="w-full bg-gray-200 h-2">
+                          <div 
+                            className="h-2 bg-indigo-600" 
+                            style={{ width: `${answerQualityScores[selectedAnswer.questionId]}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Poor</span>
+                          <span>Excellent</span>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 bg-indigo-50 border border-indigo-100">
+                        <h4 className="font-medium text-indigo-700 mb-2">Feedback</h4>
+                        <p className="text-indigo-700">{generateAnswerFeedback(selectedAnswer)}</p>
+                        
+                        <h4 className="font-medium text-indigo-700 mt-4 mb-2">How to Improve</h4>
+                        <p className="text-indigo-700">{generateImprovementTips(selectedAnswer)}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-indigo-700">Your Answers</h3>
+                  <ViewToggle 
+                    viewMode={answerViewMode} 
+                    onViewModeChange={setAnswerViewMode} 
+                  />
+                </div>
+                
+                {answerViewMode === 'card' ? (
+                  <AnswersCardView 
+                    answers={answers} 
+                    onViewAnswer={setSelectedAnswerId}
+                  />
+                ) : (
+                  <AnswersTableView 
+                    answers={answers} 
+                    onViewAnswer={setSelectedAnswerId} 
+                  />
+                )}
+              </div>
+            )}
           </div>
         </TabsContent>
         
@@ -391,6 +501,21 @@ export function InterviewResultsAnalysis({
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="share" className="animate-fade-in">
+          <div className="space-y-6">
+            <InterviewShareOptions 
+              interviewId={interview.id}
+              jobTitle={interview.jobTitle}
+            />
+            
+            <ReviewComments 
+              interviewId={interview.id}
+              reviews={reviews}
+              onAddReview={handleAddReview}
+            />
           </div>
         </TabsContent>
       </Tabs>
