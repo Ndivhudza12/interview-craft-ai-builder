@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AIGenerationModal } from '@/components/AIGenerationModal';
 import { QuestionPagination } from '@/components/QuestionPagination';
 import { InterviewSummaryCard } from '@/components/InterviewSummaryCard';
-import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon, Sparkles, Play, ArrowLeft } from 'lucide-react';
+import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon, Sparkles, Play, ArrowLeft, X } from 'lucide-react';
 import { InterviewSession } from '@/components/InterviewSession';
 import { InterviewResultsAnalysis } from '@/components/InterviewResultsAnalysis';
 import { InterviewFilters } from '@/components/InterviewFilters';
@@ -412,12 +412,12 @@ export default function InterviewQuestionForm() {
 
   if (showResults && currentInterview) {
     return (
-      <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen">
+      <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen animate-fade-in">
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
             onClick={handleBackToHome}
-            className="mb-4"
+            className="mb-4 animate-fade-in"
             isLoading={isLoading && loadingAction === 'back'}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -459,12 +459,12 @@ export default function InterviewQuestionForm() {
   
   if (isInterviewActive && currentInterview) {
     return (
-      <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 min-h-screen">
+      <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 min-h-screen animate-fade-in">
         <div className="flex items-center justify-between mb-4">
           <Button
             variant="outline"
             onClick={handleBackToHome}
-            className="mb-2"
+            className="mb-2 animate-fade-in"
             isLoading={isLoading && loadingAction === 'back'}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -474,7 +474,7 @@ export default function InterviewQuestionForm() {
           <Button
             variant="outline"
             onClick={saveDraft}
-            className="mb-2"
+            className="mb-2 animate-fade-in"
             isLoading={isLoading && loadingAction === 'save-draft'}
           >
             <Save className="mr-2 h-4 w-4" />
@@ -491,16 +491,16 @@ export default function InterviewQuestionForm() {
   }
 
   return (
-    <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen">
+    <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen animate-fade-in">
       <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 animate-fade-in">Interview Question Builder</h2>
 
       {showForm ? (
         <>
-          <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow animate-fade-in">
+          <div className="space-y-4 bg-white p-3 md:p-4 rounded-none shadow animate-fade-in">
             <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
-            <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
+            <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} className="animate-fade-in" />
             <Select value={experience} onValueChange={setExperience}>
-              <SelectTrigger>
+              <SelectTrigger className="animate-fade-in">
                 <SelectValue placeholder="Years of Experience" />
               </SelectTrigger>
               <SelectContent>
@@ -513,17 +513,18 @@ export default function InterviewQuestionForm() {
               value={description} 
               onChange={e => setDescription(e.target.value)} 
               placeholder="Job Description..." 
+              className="animate-fade-in"
             />
             
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               <Button 
                 variant="outline" 
                 onClick={handleBackToHome} 
-                className="mr-2"
+                className="animate-fade-in"
                 isLoading={isLoading && loadingAction === 'back'}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+                <X className="mr-2 h-4 w-4" />
+                Cancel
               </Button>
             </div>
           </div>
@@ -531,25 +532,25 @@ export default function InterviewQuestionForm() {
           <div className="block md:hidden space-y-3 animate-fade-in">
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add New Question
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[80vh]">
+              <SheetContent side="bottom" className="h-[80vh] rounded-none">
                 <SheetHeader>
                   <SheetTitle>Add New Question</SheetTitle>
                 </SheetHeader>
                 <div className="py-4">
-                  <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+                  <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
                     <Textarea 
                       value={questionText} 
                       onChange={e => setQuestionText(e.target.value)} 
                       placeholder="Enter your question" 
-                      className="min-h-[100px]"
+                      className="min-h-[100px] animate-fade-in"
                     />
                     <Select value={questionType} onValueChange={setQuestionType}>
-                      <SelectTrigger>
+                      <SelectTrigger className="animate-fade-in">
                         <SelectValue placeholder="Type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -558,7 +559,7 @@ export default function InterviewQuestionForm() {
                         <SelectItem value="Text">Text</SelectItem>
                       </SelectContent>
                     </Select>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 animate-fade-in">
                       <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
                       <Label htmlFor="required">Required</Label>
                     </div>
@@ -567,10 +568,11 @@ export default function InterviewQuestionForm() {
                       value={timeLimit.toString()} 
                       onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
                       placeholder="Time Limit (seconds)" 
+                      className="animate-fade-in"
                     />
                     <Button 
                       onClick={addQuestion} 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
                     >
                       {editingIndex !== null ? 'Update Question' : '+ Add Question'}
                     </Button>
@@ -580,7 +582,7 @@ export default function InterviewQuestionForm() {
             </Sheet>
 
             <Button 
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
               onClick={() => setAIModalOpen(true)}
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -590,17 +592,17 @@ export default function InterviewQuestionForm() {
 
           <div className="flex flex-col md:flex-row gap-6">
             <div className="hidden md:block md:w-2/5 space-y-6">
-              <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+              <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
                 <h3 className="text-xl font-semibold text-indigo-600">Add Question Manually</h3>
-                <div className="space-y-4 bg-white p-4 rounded-lg shadow animate-fade-in">
+                <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
                   <Textarea 
                     value={questionText} 
                     onChange={e => setQuestionText(e.target.value)} 
                     placeholder="Enter your question" 
-                    className="min-h-[100px]"
+                    className="min-h-[100px] animate-fade-in"
                   />
                   <Select value={questionType} onValueChange={setQuestionType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="animate-fade-in">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -609,7 +611,7 @@ export default function InterviewQuestionForm() {
                       <SelectItem value="Text">Text</SelectItem>
                     </SelectContent>
                   </Select>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 animate-fade-in">
                     <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
                     <Label htmlFor="required">Required</Label>
                   </div>
@@ -618,10 +620,11 @@ export default function InterviewQuestionForm() {
                     value={timeLimit.toString()} 
                     onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
                     placeholder="Time Limit (seconds)" 
+                    className="animate-fade-in"
                   />
                   <Button 
                     onClick={addQuestion} 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
                   >
                     {editingIndex !== null ? 'Update Question' : '+ Add Question'}
                   </Button>
@@ -638,7 +641,7 @@ export default function InterviewQuestionForm() {
             </div>
 
             <div className="w-full md:w-3/5 space-y-4">
-              <div className="bg-white p-3 md:p-4 rounded-lg shadow">
+              <div className="bg-white p-3 md:p-4 rounded-none shadow">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg md:text-xl font-semibold text-indigo-600">
                     Questions List ({questions.length})
@@ -648,7 +651,7 @@ export default function InterviewQuestionForm() {
                       size="sm" 
                       variant={viewMode === 'card' ? "default" : "outline"} 
                       onClick={() => setViewMode('card')}
-                      className="hover:scale-110 transition-transform"
+                      className="hover:scale-110 transition-transform animate-fade-in"
                     >
                       Cards
                     </Button>
@@ -656,7 +659,7 @@ export default function InterviewQuestionForm() {
                       size="sm" 
                       variant={viewMode === 'table' ? "default" : "outline"} 
                       onClick={() => setViewMode('table')}
-                      className="hover:scale-110 transition-transform"
+                      className="hover:scale-110 transition-transform animate-fade-in"
                     >
                       Table
                     </Button>
@@ -687,7 +690,7 @@ export default function InterviewQuestionForm() {
                                 {getQuestionTypeIcon(q.type)}
                                 <span className="ml-1 hidden md:inline">{q.type}</span>
                                 {q.required && (
-                                  <span className="ml-1 bg-red-100 text-red-700 text-xs px-1 rounded">
+                                  <span className="ml-1 bg-red-100 text-red-700 text-xs px-1 rounded-none">
                                     *
                                   </span>
                                 )}
@@ -710,7 +713,7 @@ export default function InterviewQuestionForm() {
                                       setSheetOpen(true);
                                     }
                                   }}
-                                  className="hover:bg-indigo-200 hover:scale-110 transition-all"
+                                  className="hover:bg-indigo-200 hover:scale-110 transition-all animate-fade-in"
                                 >
                                   <PencilLine className="h-4 w-4" />
                                 </Button>
@@ -718,7 +721,7 @@ export default function InterviewQuestionForm() {
                                   size="icon" 
                                   variant="ghost" 
                                   onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
-                                  className="hover:bg-red-200 hover:scale-110 transition-all"
+                                  className="hover:bg-red-200 hover:scale-110 transition-all animate-fade-in"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -732,7 +735,7 @@ export default function InterviewQuestionForm() {
                 )}
               </div>
 
-              <div className="bg-white p-3 md:p-4 rounded-lg shadow">
+              <div className="bg-white p-3 md:p-4 rounded-none shadow">
                 <InterviewSummaryCard 
                   jobTitle={jobTitle} 
                   experience={experience} 
@@ -742,14 +745,26 @@ export default function InterviewQuestionForm() {
             </div>
           </div>
 
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
-            onClick={saveForm}
-            disabled={questions.length === 0 || !jobTitle || isLoading}
-            isLoading={isLoading && loadingAction === 'save'}
-          >
-            <Save className="mr-2 h-4 w-4" /> Save Interview
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
+              onClick={saveForm}
+              disabled={questions.length === 0 || !jobTitle || isLoading}
+              isLoading={isLoading && loadingAction === 'save'}
+            >
+              <Save className="mr-2 h-4 w-4" /> Save Interview
+            </Button>
+            
+            <Button 
+              className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 hover:scale-[1.01] transition-transform animate-fade-in" 
+              onClick={handleBackToHome}
+              disabled={isLoading}
+              isLoading={isLoading && loadingAction === 'back'}
+              variant="ghost"
+            >
+              <X className="mr-2 h-4 w-4" /> Cancel
+            </Button>
+          </div>
         </>
       ) : (
         <div className="space-y-6 animate-fade-in">
@@ -757,7 +772,7 @@ export default function InterviewQuestionForm() {
             <h3 className="text-xl md:text-2xl font-semibold text-indigo-700">Saved Interviews</h3>
             <Button 
               onClick={handleCreateNewInterview}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-indigo-600 hover:bg-indigo-700 animate-fade-in"
               isLoading={isLoading && loadingAction === 'create'}
               disabled={isLoading}
             >
@@ -781,7 +796,7 @@ export default function InterviewQuestionForm() {
                 />
               ))
             ) : (
-              <div className="col-span-full text-center p-8 bg-white rounded-lg shadow">
+              <div className="col-span-full text-center p-8 bg-white rounded-none shadow animate-fade-in">
                 {filters.search || filters.status !== 'all' || filters.experience !== 'all' ? (
                   <p className="text-gray-500">No interviews match your filters. Try adjusting your search criteria.</p>
                 ) : (

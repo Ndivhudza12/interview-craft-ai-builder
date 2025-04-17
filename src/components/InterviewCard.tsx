@@ -74,7 +74,7 @@ export function InterviewCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-indigo-100 animate-fade-in">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-indigo-100 animate-fade-in">
       <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-white text-lg">{interview.jobTitle}</CardTitle>
