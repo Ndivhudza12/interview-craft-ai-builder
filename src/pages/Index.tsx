@@ -17,6 +17,7 @@ import { InterviewSummaryCard } from '@/components/InterviewSummaryCard';
 import { PlusCircle, PencilLine, Trash2, Save, FileText, Clock, Video, Mic, Text as TextIcon, Sparkles, Play, BarChart } from 'lucide-react';
 import { InterviewSession } from '@/components/InterviewSession';
 import { InterviewResultsAnalysis } from '@/components/InterviewResultsAnalysis';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Question {
   text: string;
@@ -42,26 +43,71 @@ interface SavedInterview {
 }
 
 export default function InterviewQuestionForm() {
-  const [jobTitle, setJobTitle] = useState('Frontend Developer');
-  const [experience, setExperience] = useState('1-3 years');
-  const [description, setDescription] = useState('We are looking for a skilled Frontend Developer with experience in React, TypeScript, and modern web technologies...');
+  const [jobTitle, setJobTitle] = useState('');
+  const [experience, setExperience] = useState('');
+  const [description, setDescription] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [questionType, setQuestionType] = useState('Video');
   const [required, setRequired] = useState(true);
   const [timeLimit, setTimeLimit] = useState(60);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [savedForms, setSavedForms] = useState<SavedInterview[]>([]);
+  const [savedForms, setSavedForms] = useState<SavedInterview[]>([
+    {
+      id: '1',
+      jobTitle: 'Frontend Developer',
+      experience: '1-3 years',
+      description: 'We are looking for a skilled Frontend Developer with experience in React, TypeScript, and modern web technologies...',
+      questions: [
+        {
+          text: 'Explain the difference between state and props in React',
+          type: 'Video',
+          required: true,
+          timeLimit: 60
+        },
+        {
+          text: 'How would you optimize the performance of a React application?',
+          type: 'Audio',
+          required: true,
+          timeLimit: 90
+        }
+      ]
+    },
+    {
+      id: '2',
+      jobTitle: 'UX Designer',
+      experience: '>3 years',
+      description: 'Experienced UX Designer needed to create intuitive user experiences for our digital products...',
+      questions: [
+        {
+          text: 'Describe your design process from research to implementation',
+          type: 'Video',
+          required: true,
+          timeLimit: 120
+        },
+        {
+          text: 'How do you incorporate user feedback into your design iterations?',
+          type: 'Text',
+          required: true,
+          timeLimit: 180
+        }
+      ]
+    }
+  ]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
   const [aiModalOpen, setAIModalOpen] = useState(false);
   
   // New states for interview flow
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   const [currentInterview, setCurrentInterview] = useState<SavedInterview | null>(null);
   const [isInterviewActive, setIsInterviewActive] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
+  
+  // Loading states
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState('');
 
   const randomType = () => ['Video', 'Audio', 'Text'][Math.floor(Math.random() * 3)];
 
@@ -93,13 +139,20 @@ export default function InterviewQuestionForm() {
   };
 
   const saveForm = () => {
-    const id = Date.now().toString();
-    const form: SavedInterview = { id, jobTitle, experience, description, questions };
-    console.log(form);
-    setSavedForms([...savedForms, form]);
-    setShowForm(false);
-    setCurrentInterview(form);
-    resetForm();
+    setLoadingAction('save');
+    setIsLoading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      const id = Date.now().toString();
+      const form: SavedInterview = { id, jobTitle, experience, description, questions };
+      setSavedForms([...savedForms, form]);
+      setShowForm(false);
+      setCurrentInterview(form);
+      resetForm();
+      setIsLoading(false);
+      setLoadingAction('');
+    }, 800);
   };
   
   const resetForm = () => {
@@ -110,30 +163,62 @@ export default function InterviewQuestionForm() {
   };
 
   const loadForm = (interview: SavedInterview) => {
-    setJobTitle(interview.jobTitle);
-    setExperience(interview.experience);
-    setDescription(interview.description);
-    setQuestions(interview.questions);
-    setShowForm(true);
-    setCurrentInterview(interview);
+    setLoadingAction(`load-${interview.id}`);
+    setIsLoading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setJobTitle(interview.jobTitle);
+      setExperience(interview.experience);
+      setDescription(interview.description);
+      setQuestions(interview.questions);
+      setShowForm(true);
+      setCurrentInterview(interview);
+      setIsLoading(false);
+      setLoadingAction('');
+    }, 600);
   };
   
   const startInterview = (interview: SavedInterview) => {
-    setCurrentInterview(interview);
-    setIsInterviewActive(true);
-    setShowForm(false);
+    setLoadingAction(`start-${interview.id}`);
+    setIsLoading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setCurrentInterview(interview);
+      setIsInterviewActive(true);
+      setShowForm(false);
+      setIsLoading(false);
+      setLoadingAction('');
+    }, 800);
   };
   
   const handleInterviewComplete = (collectedAnswers: Answer[]) => {
-    setAnswers(collectedAnswers);
-    setIsInterviewActive(false);
-    setShowResults(true);
+    setLoadingAction('complete');
+    setIsLoading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setAnswers(collectedAnswers);
+      setIsInterviewActive(false);
+      setShowResults(true);
+      setIsLoading(false);
+      setLoadingAction('');
+    }, 1000);
   };
   
   const handleCreateNewInterview = () => {
-    setShowForm(true);
-    setCurrentInterview(null);
-    setShowResults(false);
+    setLoadingAction('create');
+    setIsLoading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setShowForm(true);
+      setCurrentInterview(null);
+      setShowResults(false);
+      setIsLoading(false);
+      setLoadingAction('');
+    }, 600);
   };
   
   const getQuestionTypeIcon = (type: string) => {
@@ -207,16 +292,28 @@ export default function InterviewQuestionForm() {
           interview={currentInterview} 
           answers={answers} 
           onBackToList={() => {
-            setShowResults(false);
-            setCurrentInterview(null);
+            setIsLoading(true);
+            setTimeout(() => {
+              setShowResults(false);
+              setCurrentInterview(null);
+              setIsLoading(false);
+            }, 600);
           }}
           onEditInterview={() => {
-            loadForm(currentInterview);
-            setShowResults(false);
+            setIsLoading(true);
+            setTimeout(() => {
+              loadForm(currentInterview);
+              setShowResults(false);
+              setIsLoading(false);
+            }, 600);
           }}
           onRetakeInterview={() => {
-            startInterview(currentInterview);
-            setShowResults(false);
+            setIsLoading(true);
+            setTimeout(() => {
+              startInterview(currentInterview);
+              setShowResults(false);
+              setIsLoading(false);
+            }, 600);
           }}
         />
       </div>
@@ -489,7 +586,8 @@ export default function InterviewQuestionForm() {
           <Button 
             className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
             onClick={saveForm}
-            disabled={questions.length === 0 || !jobTitle}
+            disabled={questions.length === 0 || !jobTitle || isLoading}
+            isLoading={isLoading && loadingAction === 'save'}
           >
             <Save className="mr-2 h-4 w-4" /> Save Interview
           </Button>
@@ -502,6 +600,8 @@ export default function InterviewQuestionForm() {
             <Button 
               onClick={handleCreateNewInterview}
               className="bg-indigo-600 hover:bg-indigo-700"
+              isLoading={isLoading && loadingAction === 'create'}
+              disabled={isLoading}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New
@@ -530,6 +630,8 @@ export default function InterviewQuestionForm() {
                       <Button 
                         onClick={() => startInterview(interview)}
                         className="w-full bg-green-600 hover:bg-green-700 flex items-center justify-center"
+                        isLoading={isLoading && loadingAction === `start-${interview.id}`}
+                        disabled={isLoading}
                       >
                         <Play className="mr-1 h-4 w-4" />
                         Start
@@ -538,6 +640,8 @@ export default function InterviewQuestionForm() {
                         onClick={() => loadForm(interview)}
                         variant="outline"
                         className="w-full border-indigo-200 hover:bg-indigo-50"
+                        isLoading={isLoading && loadingAction === `load-${interview.id}`}
+                        disabled={isLoading}
                       >
                         <PencilLine className="mr-1 h-4 w-4" />
                         Edit
