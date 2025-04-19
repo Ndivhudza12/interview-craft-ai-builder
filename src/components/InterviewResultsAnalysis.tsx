@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Redo, PencilLine, BarChart2, ListChecks, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Redo, PencilLine, BarChart2, ListChecks, MessageSquare, Clock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { InterviewAnswerPlayer } from './InterviewAnswerPlayer';
 import { ReviewComments } from './ReviewComments';
