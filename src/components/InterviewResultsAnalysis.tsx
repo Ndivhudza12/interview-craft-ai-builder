@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend 
-} from 'recharts';
-import { ArrowLeft, Redo, PencilLine, BarChart as BarChartIcon, ListChecks, MessageSquare, BarChart2, Clock, Video, Mic, Text as TextIcon } from 'lucide-react';
+import { ArrowLeft, Redo, PencilLine, BarChart2, ListChecks, MessageSquare } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { InterviewAnswerPlayer } from './InterviewAnswerPlayer';
 import { ReviewComments } from './ReviewComments';
@@ -14,6 +10,10 @@ import { InterviewShareOptions } from './InterviewShareOptions';
 import { ViewToggle } from './ViewToggle';
 import { AnswersTableView } from './AnswersTableView';
 import { AnswersCardView } from './AnswersCardView';
+import { ScoreCards } from './results/ScoreCards';
+import { PerformanceCharts } from './results/PerformanceCharts';
+import { ImprovementAreas } from './results/ImprovementAreas';
+import { generateAnswerFeedback, generateImprovementTips } from '@/utils/answerFeedback';
 
 interface Question {
   text: string;
@@ -53,38 +53,6 @@ interface InterviewResultsAnalysisProps {
   onEditInterview: () => void;
   onRetakeInterview: () => void;
 }
-
-const generateAnswerFeedback = (answer: Answer) => {
-  const feedbacks = [
-    "Your response was well-structured and addressed the key points.",
-    "Consider providing more specific examples in your answer.",
-    "Your answer demonstrates good understanding of the topic.",
-    "The response could be more concise and focused.",
-    "You effectively highlighted your relevant experience.",
-    "Try to connect your skills more directly to the job requirements.",
-    "Good use of technical terminology and industry knowledge.",
-    "The answer could benefit from a stronger conclusion.",
-  ];
-  
-  const index = (answer.questionText.length + answer.answerText.length) % feedbacks.length;
-  return feedbacks[index];
-};
-
-const generateImprovementTips = (answer: Answer) => {
-  const tips = [
-    "Use the STAR method (Situation, Task, Action, Result) to structure your response.",
-    "Include quantifiable achievements when discussing your experience.",
-    "Prepare 2-3 concrete examples that showcase your skills.",
-    "Practice brevity while still fully answering the question.",
-    "Research the company more thoroughly to tailor your answers.",
-    "Focus on demonstrating problem-solving abilities.",
-    "Highlight collaborative experiences and teamwork.",
-    "Show enthusiasm for the role and company mission.",
-  ];
-  
-  const index = answer.questionId % tips.length;
-  return tips[index];
-};
 
 export function InterviewResultsAnalysis({ 
   interview, answers, onBackToList, onEditInterview, onRetakeInterview 
@@ -137,12 +105,6 @@ export function InterviewResultsAnalysis({
     { name: 'Overall', value: overallScore, color: '#F97316' },
   ];
   
-  const questionTypeData = [
-    { name: 'Video', value: answers.filter(a => a.type === 'Video').length, color: '#9b87f5' },
-    { name: 'Audio', value: answers.filter(a => a.type === 'Audio').length, color: '#7E69AB' },
-    { name: 'Text', value: answers.filter(a => a.type === 'Text').length, color: '#D6BCFA' },
-  ].filter(item => item.value > 0);
-  
   const timeSpentData = answers.map((answer, index) => ({
     name: `Q${index + 1}`,
     timeSpent: answer.timeSpent,
@@ -157,15 +119,6 @@ export function InterviewResultsAnalysis({
     };
     
     setReviews([newReview, ...reviews]);
-  };
-  
-  const getQuestionTypeIcon = (type: string) => {
-    switch(type) {
-      case 'Video': return <Video className="h-4 w-4" />;
-      case 'Audio': return <Mic className="h-4 w-4" />;
-      case 'Text': return <TextIcon className="h-4 w-4" />;
-      default: return <TextIcon className="h-4 w-4" />;
-    }
   };
   
   const selectedAnswer = selectedAnswerId !== null 
@@ -212,35 +165,12 @@ export function InterviewResultsAnalysis({
         Completed {answers.length} of {totalQuestions} questions
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 animate-fade-in">
-          <CardContent className="p-4 text-center">
-            <div className="text-4xl font-bold text-indigo-800 mb-2">{overallScore}%</div>
-            <p className="text-indigo-700">Overall Score</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100 animate-fade-in" style={{ animationDelay: "100ms" }}>
-          <CardContent className="p-4 text-center">
-            <div className="text-4xl font-bold text-purple-800 mb-2">{completionScore}%</div>
-            <p className="text-purple-700">Completion Rate</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 animate-fade-in" style={{ animationDelay: "200ms" }}>
-          <CardContent className="p-4 text-center">
-            <div className="text-4xl font-bold text-blue-800 mb-2">{timeEfficiencyScore}%</div>
-            <p className="text-blue-700">Time Efficiency</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-50 to-teal-50 border-green-100 animate-fade-in" style={{ animationDelay: "300ms" }}>
-          <CardContent className="p-4 text-center">
-            <div className="text-4xl font-bold text-green-800 mb-2">{averageQualityScore}%</div>
-            <p className="text-green-700">Answer Quality</p>
-          </CardContent>
-        </Card>
-      </div>
+      <ScoreCards 
+        overallScore={overallScore}
+        completionScore={completionScore}
+        timeEfficiencyScore={timeEfficiencyScore}
+        averageQualityScore={averageQualityScore}
+      />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
         <TabsList className="grid grid-cols-4 mb-8">
@@ -263,82 +193,12 @@ export function InterviewResultsAnalysis({
         </TabsList>
         
         <TabsContent value="summary">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <BarChartIcon className="mr-2 h-5 w-5 text-indigo-600" />
-                  Performance Metrics
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={scoreChartData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                    <XAxis type="number" domain={[0, 100]} />
-                    <YAxis dataKey="name" type="category" width={100} />
-                    <Tooltip />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                      {scoreChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Clock className="mr-2 h-5 w-5 text-blue-600" />
-                  Time Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={timeSpentData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis label={{ value: 'Seconds', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="timeSpent" name="Time Spent" stroke="#8884d8" />
-                    <Line type="monotone" dataKey="limit" name="Time Limit" stroke="#82ca9d" strokeDasharray="5 5" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Improvement Areas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
-                    <h4 className="font-medium text-amber-800">Time Management</h4>
-                    <p className="text-amber-700 text-sm">
-                      Aim to use at least 70% of the available time for each question to provide more detailed answers.
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                    <h4 className="font-medium text-blue-800">Answer Structure</h4>
-                    <p className="text-blue-700 text-sm">
-                      Use the STAR method (Situation, Task, Action, Result) for behavioral questions to provide more comprehensive responses.
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                    <h4 className="font-medium text-green-800">Technical Knowledge</h4>
-                    <p className="text-green-700 text-sm">
-                      Include more specific technical examples and terminology relevant to the job description.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            <PerformanceCharts 
+              scoreChartData={scoreChartData}
+              timeSpentData={timeSpentData}
+            />
+            <ImprovementAreas />
           </div>
         </TabsContent>
         
