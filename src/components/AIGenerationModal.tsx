@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { LoaderCircle, Upload, FileText, Clipboard, Clock } from 'lucide-react';
+import { Upload, FileText, Clipboard, Clock } from 'lucide-react';
 import { toast } from "sonner";
 
 interface AIGenerationModalProps {
@@ -68,7 +69,8 @@ export function AIGenerationModal({
     try {
       console.log("Generating questions with prompt:", prompt);
       
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      // Simulating API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const dummyQuestions = [
         "What are the core principles of React?",
@@ -78,7 +80,7 @@ export function AIGenerationModal({
         "How do you ensure accessibility in frontend applications?"
       ];
 
-      const generatedQuestions = dummyQuestions.map(q => ({
+      const generatedQuestions = dummyQuestions.slice(0, parseInt(numberOfQuestions)).map(q => ({
         text: q,
         type: generationType === 'Mixed' ? randomType() : generationType,
         required: true,
@@ -96,71 +98,73 @@ export function AIGenerationModal({
     }
   };
 
+  const getSourceButtonClass = (source: GenerationSource) => `
+    flex flex-col items-center p-4 h-auto space-y-2 transition-all duration-200 
+    hover:scale-[1.02] animate-fade-in rounded-lg w-full
+    ${generationSource === source 
+      ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+      : 'bg-white border-2 border-purple-200 hover:border-purple-400'
+    }
+  `;
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md md:max-w-lg animate-fade-in">
+        <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-2xl animate-fade-in">
           <DialogHeader>
-            <DialogTitle>Generate AI Interview Questions</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-2xl font-bold text-purple-800">Generate AI Interview Questions</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Choose your preferred method to generate relevant interview questions
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Generate questions based on:</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Button 
-                  variant={generationSource === 'existing' ? 'default' : 'outline'} 
+              <Label className="text-lg font-semibold text-purple-800">Generate questions based on:</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button 
                   onClick={() => setGenerationSource('existing')}
-                  className={`flex flex-col items-center p-4 h-auto space-y-2 transition-all duration-200 hover:scale-[1.02] animate-fade-in ${
-                    generationSource === 'existing' ? 'bg-purple-600 hover:bg-purple-700' : ''
-                  }`}
+                  className={getSourceButtonClass('existing')}
                 >
-                  <FileText className="h-6 w-6" />
-                  <span className="text-xs">Existing Job Details</span>
-                </Button>
-                <Button 
-                  variant={generationSource === 'paste' ? 'default' : 'outline'} 
+                  <FileText className="h-8 w-8 mb-2" />
+                  <span className="text-sm font-medium">Use Job Details</span>
+                  <span className="text-xs opacity-75">From current form</span>
+                </button>
+                <button 
                   onClick={() => setGenerationSource('paste')}
-                  className={`flex flex-col items-center p-4 h-auto space-y-2 transition-all duration-200 hover:scale-[1.02] animate-fade-in ${
-                    generationSource === 'paste' ? 'bg-purple-600 hover:bg-purple-700' : ''
-                  }`}
+                  className={getSourceButtonClass('paste')}
                 >
-                  <Clipboard className="h-6 w-6" />
-                  <span className="text-xs">Paste Description</span>
-                </Button>
-                <Button 
-                  variant={generationSource === 'upload' ? 'default' : 'outline'} 
+                  <Clipboard className="h-8 w-8 mb-2" />
+                  <span className="text-sm font-medium">Custom Description</span>
+                  <span className="text-xs opacity-75">Paste your own</span>
+                </button>
+                <button 
                   onClick={() => setGenerationSource('upload')}
-                  className={`flex flex-col items-center p-4 h-auto space-y-2 transition-all duration-200 hover:scale-[1.02] animate-fade-in ${
-                    generationSource === 'upload' ? 'bg-purple-600 hover:bg-purple-700' : ''
-                  }`}
+                  className={getSourceButtonClass('upload')}
                 >
-                  <Upload className="h-6 w-6" />
-                  <span className="text-xs">Upload Resume/CV</span>
-                </Button>
+                  <Upload className="h-8 w-8 mb-2" />
+                  <span className="text-sm font-medium">Upload Resume/CV</span>
+                  <span className="text-xs opacity-75">PDF, DOC, TXT</span>
+                </button>
               </div>
             </div>
 
             {generationSource === 'paste' && (
               <div className="space-y-2 animate-fade-in">
-                <Label htmlFor="pasteContent">Paste Job Description or Resume</Label>
+                <Label className="text-purple-800 font-medium">Custom Job Description or Requirements</Label>
                 <Textarea
-                  id="pasteContent"
                   value={pastedContent}
                   onChange={(e) => setPastedContent(e.target.value)}
-                  placeholder="Paste job description or resume text here..."
-                  className="min-h-[150px] resize-none"
+                  placeholder="Paste job description, requirements, or any relevant text..."
+                  className="min-h-[150px] resize-none border-purple-200 focus:border-purple-400"
                 />
               </div>
             )}
 
             {generationSource === 'upload' && (
               <div className="space-y-2 animate-fade-in">
-                <Label>Upload Resume/CV</Label>
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-lg p-6 text-center transition-all hover:border-purple-500">
+                <Label className="text-purple-800 font-medium">Upload Resume/CV</Label>
+                <div className="border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-lg p-6 text-center transition-all">
                   <Input
                     id="fileUpload"
                     type="file"
@@ -169,8 +173,8 @@ export function AIGenerationModal({
                     accept=".pdf,.doc,.docx,.txt"
                   />
                   <Label htmlFor="fileUpload" className="cursor-pointer block">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <span className="text-sm font-medium block">
+                    <Upload className="mx-auto h-10 w-10 text-purple-400 mb-3" />
+                    <span className="text-sm font-medium block text-purple-800">
                       Click to upload or drag and drop
                     </span>
                     <span className="text-xs text-gray-500 block mt-1">
@@ -187,40 +191,42 @@ export function AIGenerationModal({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="numberOfQuestions">Number of Questions</Label>
-                <Input 
-                  id="numberOfQuestions"
-                  type="number" 
-                  value={numberOfQuestions} 
-                  onChange={e => setNumberOfQuestions(e.target.value)} 
-                  min="1"
-                  max="20"
-                  className="w-full"
-                />
+                <Label htmlFor="numberOfQuestions" className="text-purple-800 font-medium">Number of Questions</Label>
+                <div className="relative">
+                  <Input 
+                    id="numberOfQuestions"
+                    type="number" 
+                    value={numberOfQuestions} 
+                    onChange={e => setNumberOfQuestions(e.target.value)} 
+                    min="1"
+                    max="20"
+                    className="pr-12 border-purple-200 focus:border-purple-400"
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="timeLimit">Time per Question (seconds)</Label>
-                <div className="flex items-center gap-2">
+                <Label htmlFor="timeLimit" className="text-purple-800 font-medium">Time per Question</Label>
+                <div className="relative">
                   <Input 
                     id="timeLimit"
                     type="number" 
                     value={timeLimit} 
-                    onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-                    min="10"
-                    className="w-full"
+                    onChange={e => setTimeLimit(parseInt(e.target.value) || 60)} 
+                    min="30"
+                    className="pr-12 border-purple-200 focus:border-purple-400"
                   />
-                  <Clock className="h-4 w-4 text-gray-500" />
+                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2 animate-fade-in">
-              <Label htmlFor="questionType">Response Format</Label>
+            <div className="space-y-2">
+              <Label htmlFor="questionType" className="text-purple-800 font-medium">Response Format</Label>
               <Select value={generationType} onValueChange={setGenerationType}>
-                <SelectTrigger id="questionType">
+                <SelectTrigger id="questionType" className="border-purple-200 focus:border-purple-400">
                   <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,24 +238,24 @@ export function AIGenerationModal({
               </Select>
             </div>
 
-            <div className="space-y-3 animate-fade-in">
-              <Label>Question Categories</Label>
+            <div className="space-y-3">
+              <Label className="text-purple-800 font-medium">Question Categories</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-lg hover:bg-purple-100 transition-colors">
                   <Checkbox 
                     id="technical" 
                     checked={includeTechnical} 
                     onCheckedChange={(checked) => setIncludeTechnical(!!checked)} 
                   />
-                  <Label htmlFor="technical" className="text-sm">Technical Questions</Label>
+                  <Label htmlFor="technical" className="text-sm cursor-pointer">Technical Questions</Label>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-lg hover:bg-purple-100 transition-colors">
                   <Checkbox 
                     id="behavioral" 
                     checked={includeBehavioral} 
                     onCheckedChange={(checked) => setIncludeBehavioral(!!checked)} 
                   />
-                  <Label htmlFor="behavioral" className="text-sm">Behavioral Questions</Label>
+                  <Label htmlFor="behavioral" className="text-sm cursor-pointer">Behavioral Questions</Label>
                 </div>
               </div>
             </div>
@@ -268,11 +274,11 @@ export function AIGenerationModal({
               type="button" 
               onClick={generateQuestions} 
               disabled={loading || (generationSource === 'paste' && !pastedContent.trim()) || (generationSource === 'upload' && !fileContent)}
-              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700"
+              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300"
             >
               {loading ? (
                 <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
                   Generating...
                 </>
               ) : (
