@@ -14,6 +14,7 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [isRecording, setLocalIsRecording] = useState(false); // Add local state for recording
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { toast } = useToast();
 
@@ -58,6 +59,7 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
       };
       
       recorder.start();
+      setLocalIsRecording(true);
       setIsRecording(true);
       
       toast({
@@ -77,6 +79,7 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
   const stopRecording = () => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
+      setLocalIsRecording(false);
       setIsRecording(false);
       onRecordingComplete();
       
@@ -149,3 +152,4 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
     </div>
   );
 }
+
