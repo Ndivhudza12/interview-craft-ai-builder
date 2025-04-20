@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -19,6 +18,7 @@ import { InterviewResultsAnalysis } from '@/components/InterviewResultsAnalysis'
 import { InterviewFilters } from '@/components/InterviewFilters';
 import { InterviewCardsPagination } from '@/components/InterviewCardsPagination';
 import { InterviewCard } from '@/components/InterviewCard';
+import { InterviewDetailsView } from '@/components/InterviewDetailsView';
 
 interface Question {
   text: string;
@@ -135,6 +135,8 @@ export default function InterviewQuestionForm() {
   const [isInterviewActive, setIsInterviewActive] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<SavedInterview | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState('');
@@ -490,6 +492,18 @@ export default function InterviewQuestionForm() {
     );
   }
 
+  if (showDetails && selectedInterview) {
+    return (
+      <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen animate-fade-in">
+        <InterviewDetailsView
+          interview={selectedInterview}
+          onClose={handleCloseDetails}
+          onEdit={handleEditFromDetails}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen animate-fade-in">
       <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 animate-fade-in">Interview Question Builder</h2>
@@ -791,6 +805,7 @@ export default function InterviewQuestionForm() {
                   interview={interview}
                   onStartInterview={startInterview}
                   onEditInterview={loadForm}
+                  onDetailsView={handleViewDetails}
                   isLoading={isLoading}
                   loadingAction={loadingAction}
                 />

@@ -1,8 +1,7 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PencilLine, Play, Video, Mic, Text as TextIcon, Clock, FileCheck, FileClock } from "lucide-react";
+import { PencilLine, Play, Video, Mic, Text as TextIcon, Clock, FileCheck, FileClock, Eye } from "lucide-react";
 
 interface Question {
   text: string;
@@ -25,29 +24,28 @@ interface InterviewCardProps {
   interview: SavedInterview;
   onStartInterview: (interview: SavedInterview) => void;
   onEditInterview: (interview: SavedInterview) => void;
+  onViewDetails?: (interview: SavedInterview) => void;
   isLoading: boolean;
   loadingAction: string;
 }
 
-export function InterviewCard({ 
-  interview, 
-  onStartInterview, 
-  onEditInterview, 
-  isLoading, 
-  loadingAction 
+export function InterviewCard({
+  interview,
+  onStartInterview,
+  onEditInterview,
+  onViewDetails,
+  isLoading,
+  loadingAction
 }: InterviewCardProps) {
-  // Count different question types
   const videoQuestions = interview.questions.filter(q => q.type === 'Video').length;
   const audioQuestions = interview.questions.filter(q => q.type === 'Audio').length;
   const textQuestions = interview.questions.filter(q => q.type === 'Text').length;
   
-  // Calculate total time in seconds and minutes
   const totalTimeSeconds = interview.questions.reduce((total, q) => total + q.timeLimit, 0);
   const totalMinutes = Math.floor(totalTimeSeconds / 60);
   const remainingSeconds = totalTimeSeconds % 60;
   const formattedTime = `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   
-  // Get status badge
   const getStatusBadge = () => {
     switch(interview.status) {
       case 'draft': 
@@ -74,14 +72,14 @@ export function InterviewCard({
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-indigo-100 animate-fade-in">
+    <Card className="animate-fade-in hover:shadow-lg transition-all">
       <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-white text-lg">{interview.jobTitle}</CardTitle>
           {interview.status && getStatusBadge()}
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-4">
+      <CardContent>
         <div className="text-sm text-gray-600">
           <p><span className="font-medium">Experience:</span> {interview.experience}</p>
           <p><span className="font-medium">Questions:</span> {interview.questions.length}</p>
@@ -115,27 +113,38 @@ export function InterviewCard({
           </div>
         )}
         
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <Button 
+        <CardFooter className="flex justify-between pt-2">
+          <div className="flex gap-2">
+            {onViewDetails && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewDetails(interview)}
+                className="text-indigo-600 hover:text-indigo-700"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEditInterview(interview)}
+              isLoading={isLoading && loadingAction === `load-${interview.id}`}
+            >
+              <PencilLine className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+          </div>
+          <Button
             onClick={() => onStartInterview(interview)}
-            className="w-full bg-green-600 hover:bg-green-700 flex items-center justify-center"
+            size="sm"
             isLoading={isLoading && loadingAction === `start-${interview.id}`}
-            disabled={isLoading}
           >
-            <Play className="mr-1 h-4 w-4" />
+            <Play className="h-4 w-4 mr-1" />
             Start
           </Button>
-          <Button 
-            onClick={() => onEditInterview(interview)}
-            variant="outline"
-            className="w-full border-indigo-200 hover:bg-indigo-50"
-            isLoading={isLoading && loadingAction === `load-${interview.id}`}
-            disabled={isLoading}
-          >
-            <PencilLine className="mr-1 h-4 w-4" />
-            Edit
-          </Button>
-        </div>
+        </CardFooter>
       </CardContent>
     </Card>
   );
