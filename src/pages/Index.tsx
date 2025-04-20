@@ -19,6 +19,8 @@ import { InterviewFilters } from '@/components/InterviewFilters';
 import { InterviewCardsPagination } from '@/components/InterviewCardsPagination';
 import { InterviewCard } from '@/components/InterviewCard';
 import { InterviewDetailsView } from '@/components/InterviewDetailsView';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Question {
   text: string;
@@ -526,147 +528,117 @@ export default function InterviewQuestionForm() {
       <h2 className="text-2xl md:text-3xl font-bold text-center text-indigo-700 animate-fade-in">Interview Question Builder</h2>
 
       {showForm ? (
-        <>
-          <div className="space-y-4 bg-white p-3 md:p-4 rounded-none shadow animate-fade-in">
-            <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
-            <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} className="animate-fade-in" />
-            <Select value={experience} onValueChange={setExperience}>
-              <SelectTrigger className="animate-fade-in">
-                <SelectValue placeholder="Years of Experience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="<1 year">Less than 1 year</SelectItem>
-                <SelectItem value="1-3 years">1-3 years</SelectItem>
-                <SelectItem value=">3 years">More than 3 years</SelectItem>
-              </SelectContent>
-            </Select>
-            <Textarea 
-              value={description} 
-              onChange={e => setDescription(e.target.value)} 
-              placeholder="Job Description..." 
-              className="animate-fade-in"
-            />
-            
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleBackToHome} 
-                className="animate-fade-in"
-                isLoading={isLoading && loadingAction === 'back'}
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-            </div>
-          </div>
-
-          <div className="block md:hidden space-y-3 animate-fade-in">
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild>
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add New Question
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-[80vh] rounded-none">
-                <SheetHeader>
-                  <SheetTitle>Add New Question</SheetTitle>
-                </SheetHeader>
-                <div className="py-4">
-                  <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
-                    <Textarea 
-                      value={questionText} 
-                      onChange={e => setQuestionText(e.target.value)} 
-                      placeholder="Enter your question" 
-                      className="min-h-[100px] animate-fade-in"
-                    />
-                    <Select value={questionType} onValueChange={setQuestionType}>
-                      <SelectTrigger className="animate-fade-in">
-                        <SelectValue placeholder="Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Video">Video</SelectItem>
-                        <SelectItem value="Audio">Audio</SelectItem>
-                        <SelectItem value="Text">Text</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex items-center gap-2 animate-fade-in">
-                      <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
-                      <Label htmlFor="required">Required</Label>
-                    </div>
-                    <Input 
-                      type="number" 
-                      value={timeLimit.toString()} 
-                      onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-                      placeholder="Time Limit (seconds)" 
-                      className="animate-fade-in"
-                    />
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-4">
+            <div className="bg-white p-3 md:p-4 rounded-none shadow animate-fade-in">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg md:text-xl font-semibold text-indigo-600">Job Details</h3>
+                <div className="flex items-center gap-2">
+                  {currentInterview ? (
                     <Button 
-                      onClick={addQuestion} 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
+                      onClick={saveForm}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      isLoading={isLoading && loadingAction === 'save'}
                     >
-                      {editingIndex !== null ? 'Update Question' : '+ Add Question'}
+                      Update Interview
                     </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <Button 
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
-              onClick={() => setAIModalOpen(true)}
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate with AI
-            </Button>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="hidden md:block md:w-2/5 space-y-6">
-              <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
-                <h3 className="text-xl font-semibold text-indigo-600">Add Question Manually</h3>
-                <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
-                  <Textarea 
-                    value={questionText} 
-                    onChange={e => setQuestionText(e.target.value)} 
-                    placeholder="Enter your question" 
-                    className="min-h-[100px] animate-fade-in"
-                  />
-                  <Select value={questionType} onValueChange={setQuestionType}>
-                    <SelectTrigger className="animate-fade-in">
-                      <SelectValue placeholder="Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Video">Video</SelectItem>
-                      <SelectItem value="Audio">Audio</SelectItem>
-                      <SelectItem value="Text">Text</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="flex items-center gap-2 animate-fade-in">
-                    <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
-                    <Label htmlFor="required">Required</Label>
-                  </div>
-                  <Input 
-                    type="number" 
-                    value={timeLimit.toString()} 
-                    onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
-                    placeholder="Time Limit (seconds)" 
-                    className="animate-fade-in"
-                  />
-                  <Button 
-                    onClick={addQuestion} 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
-                  >
-                    {editingIndex !== null ? 'Update Question' : '+ Add Question'}
-                  </Button>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline">Actions</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setAIModalOpen(true)}>
+                          Generate with AI
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={saveForm}>
+                          Save Interview
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleBackToHome}>
+                          Cancel
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
+              
+              <Input placeholder="Job Title" value={jobTitle} onChange={e => setJobTitle(e.target.value)} className="animate-fade-in" />
+              <Select value={experience} onValueChange={setExperience}>
+                <SelectTrigger className="mt-4 animate-fade-in">
+                  <SelectValue placeholder="Years of Experience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="<1 year">Less than 1 year</SelectItem>
+                  <SelectItem value="1-3 years">1-3 years</SelectItem>
+                  <SelectItem value=">3 years">More than 3 years</SelectItem>
+                </SelectContent>
+              </Select>
+              <Textarea 
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+                placeholder="Job Description..." 
+                className="mt-4 animate-fade-in"
+              />
+            </div>
+
+            <div className="block md:hidden space-y-3 animate-fade-in">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add New Question
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh] rounded-none">
+                  <SheetHeader>
+                    <SheetTitle>Add New Question</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-4">
+                    <div className="space-y-4 bg-white p-4 rounded-none shadow animate-fade-in">
+                      <Textarea 
+                        value={questionText} 
+                        onChange={e => setQuestionText(e.target.value)} 
+                        placeholder="Enter your question" 
+                        className="min-h-[100px] animate-fade-in"
+                      />
+                      <Select value={questionType} onValueChange={setQuestionType}>
+                        <SelectTrigger className="animate-fade-in">
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Video">Video</SelectItem>
+                          <SelectItem value="Audio">Audio</SelectItem>
+                          <SelectItem value="Text">Text</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-2 animate-fade-in">
+                        <Checkbox checked={required} onCheckedChange={checked => setRequired(!!checked)} id="required" />
+                        <Label htmlFor="required">Required</Label>
+                      </div>
+                      <Input 
+                        type="number" 
+                        value={timeLimit.toString()} 
+                        onChange={e => setTimeLimit(parseInt(e.target.value) || 0)} 
+                        placeholder="Time Limit (seconds)" 
+                        className="animate-fade-in"
+                      />
+                      <Button 
+                        onClick={addQuestion} 
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
+                      >
+                        {editingIndex !== null ? 'Update Question' : '+ Add Question'}
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
 
               <Button 
-                className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 text-lg hover:scale-[1.02] transition-transform animate-fade-in"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02] transition-transform animate-fade-in"
                 onClick={() => setAIModalOpen(true)}
               >
-                <Sparkles className="h-5 w-5" />
+                <Sparkles className="mr-2 h-4 w-4" />
                 Generate with AI
               </Button>
             </div>
@@ -674,7 +646,7 @@ export default function InterviewQuestionForm() {
             <div className="w-full md:w-3/5 space-y-4">
               <div className="bg-white p-3 md:p-4 rounded-none shadow">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg md:text-xl font-semibold text-indigo-600">
+                  <h3 className="text-xl font-semibold text-indigo-600">
                     Questions List ({questions.length})
                   </h3>
                   <div className="flex gap-2">
@@ -775,28 +747,7 @@ export default function InterviewQuestionForm() {
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Button 
-              className="w-full bg-green-600 hover:bg-green-700 text-white hover:scale-[1.01] transition-transform animate-fade-in" 
-              onClick={saveForm}
-              disabled={questions.length === 0 || !jobTitle || isLoading}
-              isLoading={isLoading && loadingAction === 'save'}
-            >
-              <Save className="mr-2 h-4 w-4" /> Save Interview
-            </Button>
-            
-            <Button 
-              className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 hover:scale-[1.01] transition-transform animate-fade-in" 
-              onClick={handleBackToHome}
-              disabled={isLoading}
-              isLoading={isLoading && loadingAction === 'back'}
-              variant="ghost"
-            >
-              <X className="mr-2 h-4 w-4" /> Cancel
-            </Button>
-          </div>
-        </>
+        </ScrollArea>
       ) : (
         <div className="space-y-6 animate-fade-in">
           <div className="flex justify-between items-center">
