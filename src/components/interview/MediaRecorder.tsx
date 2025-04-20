@@ -14,7 +14,7 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
-  const [isRecording, setLocalIsRecording] = useState(false); // Add local state for recording
+  const [isRecordingActive, setIsRecordingActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { toast } = useToast();
 
@@ -49,17 +49,20 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
         
         toast({
           title: `${type} recording completed`,
-          description: "In a production app, this would be saved to the server."
+          description: "Click Next to proceed with the analysis."
         });
         
         if (mediaStream) {
           mediaStream.getTracks().forEach(track => track.stop());
         }
         URL.revokeObjectURL(url);
+        
+        // Ensure we call onRecordingComplete to trigger analysis
+        onRecordingComplete();
       };
       
       recorder.start();
-      setLocalIsRecording(true);
+      setIsRecordingActive(true);
       setIsRecording(true);
       
       toast({
@@ -79,9 +82,8 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
   const stopRecording = () => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
-      setLocalIsRecording(false);
+      setIsRecordingActive(false);
       setIsRecording(false);
-      onRecordingComplete();
       
       if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
@@ -89,22 +91,25 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
     }
   };
 
-  if (!isRecording) {
+  if (!isRecordingActive) {
     return (
-      <div className="bg-gray-100 rounded-lg p-6 text-center">
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 text-center shadow-lg transform transition-all hover:scale-[1.02]">
         {type === 'Video' ? (
-          <Video className="h-12 w-12 mx-auto text-indigo-500 mb-2" />
+          <Video className="h-12 w-12 mx-auto text-indigo-600 mb-2" />
         ) : (
-          <Mic className="h-12 w-12 mx-auto text-blue-500 mb-2" />
+          <Mic className="h-12 w-12 mx-auto text-purple-600 mb-2" />
         )}
-        <p className="text-gray-700 font-medium">Ready to record your {type.toLowerCase()} answer</p>
+        <p className="text-gray-700 font-medium mb-4">Ready to record your {type.toLowerCase()} answer</p>
         <Button 
           onClick={startRecording}
-          className={`mt-4 ${type === 'Video' ? 'bg-indigo-600' : 'bg-blue-600'}`}
+          className={`bg-gradient-to-r ${type === 'Video' ? 
+            'from-indigo-600 to-indigo-700' : 
+            'from-purple-600 to-purple-700'} 
+            hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg`}
         >
           Start {type} Recording
         </Button>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 mt-3">
           You'll need to grant {type === 'Video' ? 'camera and microphone' : 'microphone'} permissions
         </p>
       </div>
@@ -112,7 +117,7 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
   }
 
   return (
-    <div className="bg-gray-100 rounded-lg p-4">
+    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 shadow-lg">
       {type === 'Video' && (
         <div className="aspect-video bg-black rounded-lg overflow-hidden relative mb-3">
           <video 
@@ -127,11 +132,11 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
       )}
       {type === 'Audio' && (
         <div className="h-24 flex items-center justify-center">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             {[1, 2, 3, 4, 5].map((i) => (
               <div 
                 key={i} 
-                className="w-1 bg-blue-500 rounded-full animate-pulse" 
+                className="w-1 bg-purple-500 rounded-full animate-pulse" 
                 style={{
                   height: `${20 + (Math.sin(Date.now() / (200 * i)) + 1) * 15}px`,
                   animationDelay: `${i * 0.1}s`
@@ -141,10 +146,11 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
           </div>
         </div>
       )}
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-4">
         <Button 
           variant="destructive"
           onClick={stopRecording}
+          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg"
         >
           Stop Recording
         </Button>
@@ -152,4 +158,3 @@ export function MediaRecordingSection({ type, onRecordingComplete, setIsRecordin
     </div>
   );
 }
-
