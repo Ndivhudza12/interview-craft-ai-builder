@@ -412,6 +412,23 @@ export default function InterviewQuestionForm() {
     </div>
   );
 
+  const handleViewDetails = (interview: SavedInterview) => {
+    setSelectedInterview(interview);
+    setShowDetails(true);
+  };
+  
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedInterview(null);
+  };
+  
+  const handleEditFromDetails = () => {
+    if (selectedInterview) {
+      loadForm(selectedInterview);
+      setShowDetails(false);
+    }
+  };
+
   if (showResults && currentInterview) {
     return (
       <div className="max-w-full md:max-w-6xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen animate-fade-in">
@@ -805,7 +822,7 @@ export default function InterviewQuestionForm() {
                   interview={interview}
                   onStartInterview={startInterview}
                   onEditInterview={loadForm}
-                  onDetailsView={handleViewDetails}
+                  onViewDetails={handleViewDetails}
                   isLoading={isLoading}
                   loadingAction={loadingAction}
                 />
